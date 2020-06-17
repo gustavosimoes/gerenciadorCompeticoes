@@ -39,7 +39,7 @@ public class GeradorPdf {
         boolean sucesso = false;
 
         TorneioDAO daoTorneio = new TorneioDAO();
-        
+
         Document document = new Document();
         String fileDirectory = "";
         JFileChooser fileChooser = new JFileChooser();
@@ -62,33 +62,17 @@ public class GeradorPdf {
                 Paragraph pgLocal = new Paragraph(-20, "Localização: " + daoTorneio.getLocalTorneio(nomeTorneio));
                 document.add(pgLocal);
                 document.add(pgTorneio);
-                
 
                 TorneioHasEquipeDAO daoTorneioHasEquipe = new TorneioHasEquipeDAO();
-                document.add(new Paragraph(50, "Equipes"));
+
                 ArrayList<String> equipes = daoTorneioHasEquipe.pesquisaEquipeTorneio(nomeTorneio);
+                if (!equipes.isEmpty()) {
+                    document.add(new Paragraph(50, "Equipes"));
 
-                for (int i = 0; i < equipes.size(); i++) {
-
-                    Paragraph pgEquipe = new Paragraph(equipes.get(i) + "\n");
-                    pgEquipe.setIndentationLeft(25);
-                    document.add(pgEquipe);
-
-                    CompetidorDAO daoCompetidor = new CompetidorDAO();
-                    ArrayList<Competidor> competidoresEquipe = daoCompetidor.listaCompetidores(equipes.get(i));
-
-                    //CRIANDO CABEÇALHO DA TABELA
-                    if (!competidoresEquipe.isEmpty()) {
-                        document.add(new Paragraph(15," "));
-                        PdfPTable table = this.inserirTabela(competidoresEquipe);  //FUNÇÃO DE INSERIR TABELA
-                        document.add(table); 
-                    } else {
-                        Paragraph pgEquipeSemComp = new Paragraph("Equipe sem competidores.\n");
-                        pgEquipeSemComp.setIndentationLeft(50);
-                        document.add(pgEquipeSemComp);
-                    }
+                    sucesso = true;
+                } else {
+                    document.add(new Paragraph(50, "Torneio sem equipes cadastradas"));
                 }
-                sucesso = true;
             } catch (DocumentException | FileNotFoundException ex) {
                 JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
             } finally {
@@ -101,10 +85,34 @@ public class GeradorPdf {
     }
 
     /**
-     *
-     * @param competidoresEquipe
-     * @return table
-     * @throws DocumentException
+     * Esta função insere os dados da equipe no pdf.
+     */
+    
+    public void insereEquipe(Document document, ArrayList equipes) throws DocumentException {
+        for (int i = 0; i < equipes.size(); i++) {
+
+            Paragraph pgEquipe = new Paragraph(equipes.get(i) + "\n");
+            pgEquipe.setIndentationLeft(25);
+            document.add(pgEquipe);
+
+            CompetidorDAO daoCompetidor = new CompetidorDAO();
+            ArrayList<Competidor> competidoresEquipe = daoCompetidor.listaCompetidores((String) equipes.get(i));
+
+            //CRIANDO CABEÇALHO DA TABELA
+            if (!competidoresEquipe.isEmpty()) {
+                document.add(new Paragraph(15, " "));
+                PdfPTable table = this.inserirTabela(competidoresEquipe);  //FUNÇÃO DE INSERIR TABELA
+                document.add(table);
+            } else {
+                Paragraph pgEquipeSemComp = new Paragraph("Equipe sem competidores.\n");
+                pgEquipeSemComp.setIndentationLeft(50);
+                document.add(pgEquipeSemComp);
+            }
+        }
+    }
+
+    /**
+     * Esta função retorna a tabela de competidores a ser inserida no pdf.
      */
     public PdfPTable inserirTabela(ArrayList<Competidor> competidoresEquipe) throws DocumentException {
 
@@ -145,4 +153,5 @@ public class GeradorPdf {
         return table;
 
     }
+
 }
