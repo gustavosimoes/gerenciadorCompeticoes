@@ -68,7 +68,7 @@ public class GeradorPdf {
                 ArrayList<String> equipes = daoTorneioHasEquipe.pesquisaEquipeTorneio(nomeTorneio);
                 if (!equipes.isEmpty()) {
                     document.add(new Paragraph(50, "Equipes"));
-
+                    this.insereEquipe(document, equipes);
                     sucesso = true;
                 } else {
                     document.add(new Paragraph(50, "Torneio sem equipes cadastradas"));
