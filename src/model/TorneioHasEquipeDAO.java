@@ -1,10 +1,5 @@
-//Nome do nosso pacote //                
 package model;
 
-//Classes necessárias para uso de Banco de dados //
-import controller.Competidor;
-import controller.Equipe;
-import controller.Torneio;
 import java.sql.Connection;
 
 import java.sql.DriverManager;
@@ -57,36 +52,18 @@ public class TorneioHasEquipeDAO {
     }
 
     /**
-     * ********************** INSERIR DADOS ********************************
+     * Esta função insere uma equipe ao torneio selecionado.
      */
     public boolean inserirEquipeTorneio(String nomeEquipe, String nomeTorneio) {
-        connectToDb(); //Conecta ao banco de dados
+        connectToDb();
 
         //Aqui capturamos os ids da equipe e do torneio que vamos trabalhar
-        //Comando em SQL:
         EquipeDAO daoEquipe = new EquipeDAO();
-        int idEquipe = 0;
+        TorneioDAO daoTorneio = new TorneioDAO();
+        int idEquipe = daoEquipe.getIdEquipe(nomeEquipe);
+        int idTorneio = daoTorneio.getIdTorneio(nomeTorneio);
 
-        idEquipe = daoEquipe.getIdEquipe(nomeEquipe);
-
-        int idTorneio = 0;
-        String sqltorneio = "SELECT * FROM torneio WHERE nome = ?";
-        //O comando NÃO recebe parâmetros -> consulta estática (st)
-        try {
-            pst = con.prepareStatement(sqltorneio);
-            pst.setString(1, nomeTorneio);
-            rs = pst.executeQuery();
-
-            while (rs.next()) {
-                idTorneio = rs.getInt("idtorneio");
-            }
-        } catch (SQLException ex) {
-            System.out.println("Erro = " + ex.getMessage());
-        }
-
-        //Comando em SQL:
         String sql = "INSERT INTO torneio_has_equipe (torneio_idtorneio,equipe_idequipe) values (?,?)";
-        //O comando recebe paramêtros -> consulta dinâmica (pst)
         try {
             pst = con.prepareStatement(sql);
             pst.setInt(1, idTorneio);
@@ -96,7 +73,7 @@ public class TorneioHasEquipeDAO {
             sucesso = true;
         } catch (SQLException ex) {
 
-            if (ex.getErrorCode() == 1062) {
+            if (ex.getErrorCode() == 1062) { //Código de erro para entradas duplicadas
                 JOptionPane.showMessageDialog(null, "Esta equipe já esta inserida neste torneio!");
             } else {
                 JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
@@ -113,54 +90,69 @@ public class TorneioHasEquipeDAO {
         return sucesso;
     }
 
+    /**
+     * Esta função encontra as equipes do torneio selecionado
+     */
     public ArrayList<String> pesquisaEquipeTorneio(String nomeTorneio) {
-        connectToDb(); //Conecta ao banco de dados
+        connectToDb();
+
         ArrayList<Integer> listaIdsEquipe = new ArrayList<>();
         ArrayList<String> listaNomesEquipe = new ArrayList<>();
 
-        int idTorneio = 0;
-        String sqltorneio = "SELECT * FROM torneio WHERE nome = ?";
-        //O comando NÃO recebe parâmetros -> consulta estática (st)
-        try {
-            pst = con.prepareStatement(sqltorneio);
-            pst.setString(1, nomeTorneio);
-            rs = pst.executeQuery();
+        TorneioDAO daoTorneio = new TorneioDAO();
 
-            while (rs.next()) {
-                idTorneio = rs.getInt("idtorneio");
-            }
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
-        }
+        int idTorneio = daoTorneio.getIdTorneio(nomeTorneio);
 
-        int idEquipe = 0;
-        String sqltorneiohasequipe = "SELECT equipe_idequipe FROM torneio_has_equipe WHERE torneio_idtorneio = ? ";
+        listaIdsEquipe = this.getIdEquipeTorneio(idTorneio);
+
+        listaNomesEquipe = this.pesquisaNomeEquipe(listaIdsEquipe);
+
+        return listaNomesEquipe;
+
+    }
+
+    /**
+     * Esta função retorna um ArrayList com os Ids de equipes do torneio
+     * selecionado
+     */
+    public ArrayList<Integer> getIdEquipeTorneio(int idTorneio) {
+
+        ArrayList<Integer> listaIdsEquipe = new ArrayList<>();
+
+        String sqlEquipeTorneio = "SELECT equipe_idequipe FROM torneio_has_equipe WHERE torneio_idtorneio = ? ";
         try {
-            pst = con.prepareStatement(sqltorneiohasequipe);
+            pst = con.prepareStatement(sqlEquipeTorneio);
             pst.setInt(1, idTorneio);
             rs = pst.executeQuery();
 
             while (rs.next()) {
-                idEquipe = rs.getInt("equipe_idequipe");
-                listaIdsEquipe.add(idEquipe);
+                listaIdsEquipe.add(rs.getInt("equipe_idequipe"));
             }
+
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
         }
+        return listaIdsEquipe;
+    }
 
-        String nomeEquipe;
+    /**
+     * Esta função retorna um ArrayList com os nomes das equipes do torneio
+     * selecionado
+     */
+    public ArrayList<String> pesquisaNomeEquipe(ArrayList<Integer> listaIdsEquipe) {
+
+        ArrayList<String> listaNomesEquipe = new ArrayList<>();
 
         for (int i : listaIdsEquipe) {
 
-            String sqlcapturafinal = "SELECT * FROM equipe WHERE idequipe = ? ";
+            String sqlGetNomeEquipe = "SELECT * FROM equipe WHERE idequipe = ? ";
             try {
-                pst = con.prepareStatement(sqlcapturafinal);
+                pst = con.prepareStatement(sqlGetNomeEquipe);
                 pst.setInt(1, i);
                 rs = pst.executeQuery();
 
                 while (rs.next()) {
-                    nomeEquipe = rs.getString("nome");
-                    listaNomesEquipe.add(nomeEquipe);
+                    listaNomesEquipe.add(rs.getString("nome"));
                 }
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
@@ -168,100 +160,78 @@ public class TorneioHasEquipeDAO {
 
         }
 
-        try {
+        return listaNomesEquipe;
+    }
+
+    /**
+     * Esta função retorna um ArrayList com os capitães das equipes do torneio
+     * selecionado.
+     */
+    public ArrayList<String> pesquisaCapitaoEquipe(String nomeTorneio) {
+        connectToDb(); //Conecta ao banco de dados
+        ArrayList<Integer> listaIdsEquipe = new ArrayList<>();
+        ArrayList<String> listaCapitaes = new ArrayList<>();
+
+        TorneioDAO daoTorneio = new TorneioDAO();
+
+        int idTorneio = daoTorneio.getIdTorneio(nomeTorneio);
+
+        listaIdsEquipe = this.getIdEquipeTorneio(idTorneio);
+
+        for (int i : listaIdsEquipe) {
+
+            String sqlGetIdCapitao = "SELECT * FROM equipe WHERE idequipe = ? ";
+            try {
+                pst = con.prepareStatement(sqlGetIdCapitao);
+                pst.setInt(1, i);
+                rs = pst.executeQuery();
+
+                while (rs.next()) {
+                    listaCapitaes.add(this.getNomeCapitao(rs.getInt("competidor_idcompetidor")));
+                }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
+            }
+        }
+
+        try { //encerrando a conexão
             con.close();
             pst.close();
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
         }
 
-        return listaNomesEquipe;
-
+        return listaCapitaes;
     }
 
-    public ArrayList<String> pesquisaCapitaoEquipe(String nomeTorneio) {
-        connectToDb(); //Conecta ao banco de dados
-        ArrayList<Integer> listaIdsEquipe = new ArrayList<>();
-        ArrayList<String> listaCapitaes = new ArrayList<>();
+    /**
+     * Esta função é um complemento de pesquisaCapitaoEquipe(), ela retorna o do
+     * competidor cujo id é passado no parâmetro.
+     */
+    public String getNomeCapitao(int idCapitao) {
 
-        int idTorneio = 0;
-        String sqltorneio = "SELECT * FROM torneio WHERE nome = ?";
-        //O comando NÃO recebe parâmetros -> consulta estática (st)
-        try {
-            pst = con.prepareStatement(sqltorneio);
-            pst.setString(1, nomeTorneio);
-            rs = pst.executeQuery();
+        String nomeCapitao = "";
 
-            while (rs.next()) {
-                idTorneio = rs.getInt("idtorneio");
-            }
-        } catch (SQLException ex) {
-            System.out.println("Erro = " + ex.getMessage());
-        }
+        if (idCapitao != 0) {
 
-        int idEquipe = 0;
-        String sqltorneiohasequipe = "SELECT equipe_idequipe FROM torneio_has_equipe WHERE torneio_idtorneio = ? ";
-        try {
-            pst = con.prepareStatement(sqltorneiohasequipe);
-            pst.setInt(1, idTorneio);
-            rs = pst.executeQuery();
+            String sqlcapturanomecapitao = "SELECT * FROM competidor WHERE idcompetidor = ? ";
 
-            while (rs.next()) {
-                idEquipe = rs.getInt("equipe_idequipe");
-                listaIdsEquipe.add(idEquipe);
-            }
-        } catch (SQLException ex) {
-            System.out.println("Erro = " + ex.getMessage());
-        }
-
-        String nomeCapitao;
-
-        for (int i : listaIdsEquipe) {
-
-            String sqlcapturaidcapitao = "SELECT * FROM equipe WHERE idequipe = ? ";
             try {
-                pst = con.prepareStatement(sqlcapturaidcapitao);
-                pst.setInt(1, i);
+                pst = con.prepareStatement(sqlcapturanomecapitao);
+                pst.setInt(1, idCapitao);
                 rs = pst.executeQuery();
 
                 while (rs.next()) {
-
-                    int idCapitao = rs.getInt("competidor_idcompetidor");
-
-                    if (idCapitao != 0) {
-
-                        String sqlcapturanomecapitao = "SELECT * FROM competidor WHERE idcompetidor = ? ";
-
-                        try {
-                            pst = con.prepareStatement(sqlcapturanomecapitao);
-                            pst.setInt(1, idCapitao);
-                            rs = pst.executeQuery();
-
-                            while (rs.next()) {
-
-                                nomeCapitao = rs.getString("nome");
-                                listaCapitaes.add(nomeCapitao);
-                            }
-                        } catch (SQLException ex) {
-                            System.out.println("Erro = " + ex.getMessage());
-                        }
-
-                    } else {
-                        listaCapitaes.add("Sem Capitão");
-                    }
+                    nomeCapitao = rs.getString("nome");
                 }
             } catch (SQLException ex) {
-                System.out.println("Erro = " + ex.getMessage());
+                JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
             }
-        }
-        try {
-            con.close();
-            pst.close();
-        } catch (SQLException ex) {
-            System.out.println("Erro = " + ex.getMessage());
+
+        } else {
+            nomeCapitao = "Sem Capitão";
         }
 
-        return listaCapitaes;
-
+        return nomeCapitao;
     }
 }
