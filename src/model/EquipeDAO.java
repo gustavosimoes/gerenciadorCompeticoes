@@ -64,7 +64,7 @@ public class EquipeDAO {
             pst.execute();
             sucesso = true;
         } catch (SQLException ex) {
-            if (ex.getErrorCode() == 1062) { //codigo do erro para nomes duplicados.
+            if (ex.getErrorCode() == 1062) { //Código de erro para entradas duplicadas
                 JOptionPane.showMessageDialog(null, "Equipe com este nome ja cadastrada!\nTente Novamente com um nome diferente");
             } else {
                 JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());

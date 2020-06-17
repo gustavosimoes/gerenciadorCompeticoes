@@ -64,7 +64,7 @@ public class TorneioDAO {
             pst.execute();
             sucesso = true;
         } catch (SQLException ex) {
-            if (ex.getErrorCode() == 1062) {
+            if (ex.getErrorCode() == 1062) { //Código de erro para entradas duplicadas
                 JOptionPane.showMessageDialog(null, "Torneio com este nome ja cadastrada!\nTente Novamente com um nome diferente!");
             } else {
                 JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
