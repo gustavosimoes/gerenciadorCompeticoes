@@ -25,6 +25,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import model.CompetidorDAO;
+import model.TorneioDAO;
 import model.TorneioHasEquipeDAO;
 
 /**
@@ -37,6 +38,8 @@ public class GeradorPdf {
 
         boolean sucesso = false;
 
+        TorneioDAO daoTorneio = new TorneioDAO();
+        
         Document document = new Document();
         String fileDirectory = "";
         JFileChooser fileChooser = new JFileChooser();
@@ -56,7 +59,10 @@ public class GeradorPdf {
                 img.setIndentationLeft(20);
                 document.add(img);
                 Paragraph pgTorneio = new Paragraph(-20, "Nome do torneio: " + nomeTorneio);
+                Paragraph pgLocal = new Paragraph(-20, "Localização: " + daoTorneio.getLocalTorneio(nomeTorneio));
+                document.add(pgLocal);
                 document.add(pgTorneio);
+                
 
                 TorneioHasEquipeDAO daoTorneioHasEquipe = new TorneioHasEquipeDAO();
                 document.add(new Paragraph(50, "Equipes"));
