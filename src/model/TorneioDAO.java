@@ -44,22 +44,18 @@ public class TorneioDAO {
     public void connectToDb() {
         try {
             con = DriverManager.getConnection(url, user, password);
-            //JOptionPane.showMessageDialog(null, "Conexão feita com sucesso!");
-            //System.out.println("Conexão feita com sucesso!");
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, "Erro: " + ex.getMessage(), "Mensagem de Erro", JOptionPane.ERROR_MESSAGE);
         }
-
     }
 
     /**
-     * ********************** INSERIR DADOS ********************************
+     * Esta função insere um novo torneio no banco de dados.
      */
     public boolean inserirTorneio(Torneio novoTorneio) {
         connectToDb(); //Conecta ao banco de dados
-        //Comando em SQL:
         String sql = "INSERT INTO torneio (nome,localizacao) values (?,?)";
-        //O comando recebe paramêtros -> consulta dinâmica (pst)
+
         try {
             pst = con.prepareStatement(sql);
             pst.setString(1, novoTorneio.getNomeTorneio());
@@ -79,53 +75,52 @@ public class TorneioDAO {
                 con.close();
                 pst.close();
             } catch (SQLException ex) {
-                System.out.println("Erro = " + ex.getMessage());
+                JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
             }
         }
         return sucesso;
     }
 
     /**
-     * ********************* CRIANDO ARRAYLIST COM OS NOMES DAS EQUIPES
-     * **************
+     * Esta função retorna a lista dos torneios cadastrados.
      */
     public ArrayList<String> listaTorneios() {
         ArrayList<String> listaTorneios = new ArrayList<>();
         connectToDb();
-        //Comando em SQL:
+
         String sql = "SELECT * FROM torneio";
-        //O comando NÃO recebe parâmetros -> consulta estática (st)
+
         try {
             st = con.createStatement();
             rs = st.executeQuery(sql); //ref. a tabela resultante da busca
             while (rs.next()) {
-                //System.out.println(rs.getString("nome"));
-
                 listaTorneios.add(rs.getString("nome"));
             }
             sucesso = true;
         } catch (SQLException ex) {
-            System.out.println("Erro = " + ex.getMessage());
+            JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
             sucesso = false;
         } finally {
             try {
                 con.close();
                 st.close();
             } catch (SQLException ex) {
-                System.out.println("Erro = " + ex.getMessage());
+                JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
             }
         }
         return listaTorneios;
     }
 
+    /**
+     * Esta função atualiza o nome do torneio selecionado.
+     */
     public boolean atualizaNomeTorneio(String nomeTorneio, String novoNomeTorneio) {
 
         connectToDb();
         int idTorneio = this.getIdTorneio(nomeTorneio);
 
-        //Comando em SQL:
         String sql = "UPDATE torneio SET nome = ? WHERE idtorneio = ?";
-        //O comando recebe paramêtros -> consulta dinâmica (pst)
+
         try {
             pst = con.prepareStatement(sql);
             pst.setString(1, novoNomeTorneio);
@@ -142,21 +137,23 @@ public class TorneioDAO {
                 con.close();
                 pst.close();
             } catch (SQLException ex) {
-                System.out.println("Erro = " + ex.getMessage());
+                JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
             }
         }
 
         return sucesso;
     }
 
+    /**
+     * Esta função atualiza a localização do torneio selecionado.
+     */
     public boolean atualizaLocalizacaoTorneio(String nomeTorneio, String novaLocalizacao) {
 
         connectToDb();
         int idTorneio = this.getIdTorneio(nomeTorneio);
 
-        //Comando em SQL:
         String sql = "UPDATE torneio SET localizacao = ? WHERE idtorneio = ?";
-        //O comando recebe paramêtros -> consulta dinâmica (pst)
+
         try {
             pst = con.prepareStatement(sql);
             pst.setString(1, novaLocalizacao);
@@ -173,20 +170,22 @@ public class TorneioDAO {
                 con.close();
                 pst.close();
             } catch (SQLException ex) {
-                System.out.println("Erro = " + ex.getMessage());
+                JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
             }
         }
 
         return sucesso;
     }
 
+    /**
+     * Esta função apaga o torneio selecionado.
+     */
     public boolean deletarTorneio(String nomeTorneio) {
         connectToDb();
-        //Comando em SQL:
 
         int opcao = JOptionPane.showConfirmDialog(null, "Deseja realmente excluir?", "Excluir Torneio", JOptionPane.YES_NO_OPTION);
         if (opcao == 0) {
-            
+
             int idTorneio = this.getIdTorneio(nomeTorneio);
 
             String sqlDeleteEquipe = "DELETE FROM torneio WHERE idtorneio=?";
@@ -196,14 +195,14 @@ public class TorneioDAO {
                 pst.execute();
                 sucesso = true;
             } catch (SQLException ex) {
-                System.out.println("Erro = " + ex.getMessage());
+                JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
                 sucesso = false;
             } finally {
                 try {
                     con.close();
                     pst.close();
                 } catch (SQLException ex) {
-                    System.out.println("Erro = " + ex.getMessage());
+                    JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
                 }
             }
         } else {
@@ -211,17 +210,49 @@ public class TorneioDAO {
         }
         return sucesso;
     }
-    
-    public Integer getIdTorneio(String nomeTorneio){
-        
+
+    /**
+     * Esta função retorna o local do torneio.
+     */
+    public String getLocalTorneio(String nomeTorneio) {
+
         connectToDb();
+
+        String localTorneio = "";
+
+        int idTorneio = this.getIdTorneio(nomeTorneio);
         
-        int idTorneio = 0;
-        
-        String sqlequipe = "SELECT * FROM torneio WHERE nome = ?";
-        //O comando NÃO recebe parâmetros -> consulta estática (st)
+        String sqlLocalTorneio = "SELECT * FROM torneio WHERE idtorneio = ?";
         try {
-            pst = con.prepareStatement(sqlequipe);
+            pst = con.prepareStatement(sqlLocalTorneio);
+            pst.setInt(1, idTorneio);
+            rs = pst.executeQuery();
+
+            while (rs.next()) {
+                localTorneio = rs.getString("localizacao");
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
+        }
+
+        return localTorneio;
+    }
+
+
+
+    /**
+     * Esta função retorna o id do torneio selecionado.
+     */
+    
+    public Integer getIdTorneio(String nomeTorneio) {
+
+        connectToDb();
+
+        int idTorneio = 0;
+
+        String sqlTorneio = "SELECT * FROM torneio WHERE nome = ?";
+        try {
+            pst = con.prepareStatement(sqlTorneio);
             pst.setString(1, nomeTorneio);
             rs = pst.executeQuery();
 
@@ -229,9 +260,9 @@ public class TorneioDAO {
                 idTorneio = rs.getInt("idtorneio");
             }
         } catch (SQLException ex) {
-            System.out.println("Erro = " + ex.getMessage());
+            JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
         }
-        
+
         return idTorneio;
     }
 }
