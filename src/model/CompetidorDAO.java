@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
+import view.TelaInicial;
 
 //Início da classe de conexão//
 public class CompetidorDAO {
@@ -140,26 +141,31 @@ public class CompetidorDAO {
     /**
      * Esta função exclui o competidor selecionado.
      */
-    public boolean deletarCompetidor(String nomeCompetidor) {
+    public boolean deletarCompetidor(String nomeCompetidor, int idEquipe) {
 
         connectToDb(); //Conecta ao banco de dados
         //Comando em SQL:
 
         int idCompetidor = 0;
 
-        String sqlIdCompetidor = "SELECT * FROM competidor WHERE nome = ?";
-        String sqlApagaCompetidor = "DELETE FROM competidor WHERE idcompetidor = ?";
+        String sqlIdCompetidor = "SELECT * FROM competidor WHERE nome = (?) AND equipe_idequipe = (?)";
+        String sqlExcluirCompetidor = "DELETE FROM competidor WHERE idcompetidor = (?)";
         try {
             pst = con.prepareStatement(sqlIdCompetidor);
             pst.setString(1, nomeCompetidor);
+            pst.setInt(2, idEquipe);
             rs = pst.executeQuery();
 
             while (rs.next()) {
                 idCompetidor = rs.getInt("idcompetidor");
             }
 
-            pst = con.prepareStatement(sqlApagaCompetidor);
+            pst = con.prepareStatement(sqlExcluirCompetidor);
             pst.setInt(1, idCompetidor);
+            
+            
+            System.out.println(idEquipe);
+            
 
             pst.execute();
             sucesso = true;

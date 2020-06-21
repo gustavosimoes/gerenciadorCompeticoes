@@ -262,8 +262,11 @@ public class CadastroMembros extends javax.swing.JFrame {
         if (tbl_competidores.getSelectedRow() != -1) {
             DefaultTableModel dtmEquipes = (DefaultTableModel) tbl_competidores.getModel();
             String deletaCompetidor = (String) dtmEquipes.getValueAt(tbl_competidores.getSelectedRow(), 0);
+            EquipeDAO daoEquipe = new EquipeDAO();
+            System.out.println(TelaInicial.getSelectedValueNomeEquipe());
+            int idEquipe = daoEquipe.getIdEquipe(TelaInicial.getSelectedValueNomeEquipe());
             CompetidorDAO daoCompetidor = new CompetidorDAO();
-            if (daoCompetidor.deletarCompetidor(deletaCompetidor)) {
+            if (daoCompetidor.deletarCompetidor(deletaCompetidor, idEquipe)) {
                 JOptionPane.showMessageDialog(null, "Competidor Excluído.");
                 dtmEquipes.removeRow(tbl_competidores.getSelectedRow());
             }
