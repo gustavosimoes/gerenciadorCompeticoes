@@ -214,26 +214,46 @@ public class CadastroMembros extends javax.swing.JFrame {
 
     private void btn_cadastrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_cadastrarActionPerformed
         // TODO add your handling code here:
-        try {
-            String nome = txt_Jogador.getText();
-            int idade = Integer.parseInt(txt_Idade.getText());
-            String sexo = txt_sexo.getSelectedItem().toString();
-            String nomeEquipe = TelaInicial.getSelectedValueNomeEquipe();
-            Competidor competidor = new Competidor(nome, idade, sexo);
-            CompetidorDAO daoCompetidor = new CompetidorDAO();
-            daoCompetidor.inserirCompetidor(competidor, nomeEquipe);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Insira a Idade", "", JOptionPane.WARNING_MESSAGE
-            );
+
+        CompetidorDAO daoCompetidor = new CompetidorDAO();
+        String nomeEquipe = TelaInicial.getSelectedValueNomeEquipe();
+
+        String nome = txt_Jogador.getText();
+        int idade = Integer.parseInt(txt_Idade.getText());
+        String sexo = txt_sexo.getSelectedItem().toString();
+
+        Competidor competidor = new Competidor(nome, idade, sexo);
+        boolean temNome = false;
+
+        ArrayList<Competidor> listaCompetidores = daoCompetidor.listaCompetidores(nomeEquipe);
+        ArrayList<String> listaNomeCompetidor = new ArrayList<>();
+
+        for (Competidor comp : listaCompetidores) {
+            listaNomeCompetidor.add(comp.getNome());
         }
 
-        if (check_capitao.isSelected()) {
-            EquipeDAO daoEquipe = new EquipeDAO();
-            if (daoEquipe.addCapitao()) {
-                JOptionPane.showMessageDialog(null, "Capitão da Equipe!");
+        for (int i = 0; i < listaNomeCompetidor.size(); i++) {
+            if (competidor.getNome().equals(listaNomeCompetidor.get(i))) {
+                temNome = true;
             }
         }
+        if (!temNome) {
+            try {
+                daoCompetidor.inserirCompetidor(competidor, nomeEquipe);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Insira a Idade", "", JOptionPane.WARNING_MESSAGE
+                );
+            }
 
+            if (check_capitao.isSelected()) {
+                EquipeDAO daoEquipe = new EquipeDAO();
+                if (daoEquipe.addCapitao()) {
+                    JOptionPane.showMessageDialog(null, "Capitão da Equipe!");
+                }
+            }
+        } else{
+            JOptionPane.showMessageDialog(null, "Esta equipe já tem um competidor com esse nome cadastrado, por favor tente outro.");
+        }
 
     }//GEN-LAST:event_btn_cadastrarActionPerformed
 

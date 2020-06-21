@@ -60,6 +60,8 @@ public class CompetidorDAO {
         EquipeDAO daoEquipe = new EquipeDAO();
         int idEquipe = daoEquipe.getIdEquipe(nomeEquipe); //Função que busca o id da Equipe
 
+        connectToDb();
+
         String sqlInserirCompetidor = "INSERT INTO competidor (nome,idade,sexo,equipe_idequipe) values (?,?,?,?)"; //Inserindo o competidor na equipe
         //O comando recebe paramêtros -> consulta dinâmica (pst)
         try {
@@ -73,17 +75,16 @@ public class CompetidorDAO {
             JOptionPane.showMessageDialog(null, "Inserção feita com sucesso!");
             sucesso = true;
         } catch (SQLException ex) {
-            System.out.println("Erro = " + ex.getMessage());
+            JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
             sucesso = false;
         } finally {
             try {   //Encerra a conexão
                 con.close();
                 pst.close();
             } catch (SQLException ex) {
-                System.out.println("Erro = " + ex.getMessage());
+                JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
             }
         }
-
         return sucesso;
     }
 
@@ -163,7 +164,7 @@ public class CompetidorDAO {
             pst.execute();
             sucesso = true;
         } catch (SQLException ex) {
-            System.out.println("Erro = " + ex.getMessage());
+            JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
         } finally {
             try {
                 con.close();
