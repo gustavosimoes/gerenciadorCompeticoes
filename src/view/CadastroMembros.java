@@ -217,10 +217,15 @@ public class CadastroMembros extends javax.swing.JFrame {
 
         CompetidorDAO daoCompetidor = new CompetidorDAO();
         String nomeEquipe = TelaInicial.getSelectedValueNomeEquipe();
+        boolean idadeOk = true;
 
         String nome = txt_Jogador.getText();
-        int idade = Integer.parseInt(txt_Idade.getText());
+        int idade = 0;
         String sexo = txt_sexo.getSelectedItem().toString();
+
+        if (!txt_Idade.getText().isEmpty()) {
+            idade = Integer.parseInt(txt_Idade.getText());
+        }
 
         Competidor competidor = new Competidor(nome, idade, sexo);
         boolean temNome = false;
@@ -237,12 +242,11 @@ public class CadastroMembros extends javax.swing.JFrame {
                 temNome = true;
             }
         }
-        if (!temNome) {
+        if (!temNome && idadeOk) {
             try {
                 daoCompetidor.inserirCompetidor(competidor, nomeEquipe);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(null, "Insira a Idade", "", JOptionPane.WARNING_MESSAGE
-                );
+                JOptionPane.showMessageDialog(null, "Erro = " + ex.getMessage());
             }
 
             if (check_capitao.isSelected()) {
@@ -251,7 +255,7 @@ public class CadastroMembros extends javax.swing.JFrame {
                     JOptionPane.showMessageDialog(null, "Capitão da Equipe!");
                 }
             }
-        } else{
+        } else {
             JOptionPane.showMessageDialog(null, "Esta equipe já tem um competidor com esse nome cadastrado, por favor tente outro.");
         }
 
@@ -263,7 +267,6 @@ public class CadastroMembros extends javax.swing.JFrame {
             DefaultTableModel dtmEquipes = (DefaultTableModel) tbl_competidores.getModel();
             String deletaCompetidor = (String) dtmEquipes.getValueAt(tbl_competidores.getSelectedRow(), 0);
             EquipeDAO daoEquipe = new EquipeDAO();
-            System.out.println(TelaInicial.getSelectedValueNomeEquipe());
             int idEquipe = daoEquipe.getIdEquipe(TelaInicial.getSelectedValueNomeEquipe());
             CompetidorDAO daoCompetidor = new CompetidorDAO();
             if (daoCompetidor.deletarCompetidor(deletaCompetidor, idEquipe)) {

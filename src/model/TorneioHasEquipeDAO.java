@@ -159,7 +159,6 @@ public class TorneioHasEquipeDAO {
             }
 
         }
-
         return listaNomesEquipe;
     }
 
@@ -169,6 +168,7 @@ public class TorneioHasEquipeDAO {
      */
     public ArrayList<String> pesquisaCapitaoEquipe(String nomeTorneio) {
         connectToDb(); //Conecta ao banco de dados
+        
         ArrayList<Integer> listaIdsEquipe = new ArrayList<>();
         ArrayList<String> listaCapitaes = new ArrayList<>();
 

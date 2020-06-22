@@ -162,11 +162,6 @@ public class CompetidorDAO {
 
             pst = con.prepareStatement(sqlExcluirCompetidor);
             pst.setInt(1, idCompetidor);
-            
-            
-            System.out.println(idEquipe);
-            
-
             pst.execute();
             sucesso = true;
         } catch (SQLException ex) {
